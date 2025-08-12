@@ -10,7 +10,7 @@ plugins {
 def tagName = '0.0.6'
 
 android {
-    compileSdk 34
+    compileSdk 36
     defaultConfig {
         applicationId "io.github.jqssun.gpssetter"
         minSdk 27
@@ -39,10 +39,14 @@ android {
             def keystoreProperties = new Properties()
             keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
+            // Only configure signing if all required properties are present
+            if (keystoreProperties['keyAlias'] && keystoreProperties['keyPassword'] && 
+                keystoreProperties['storeFile'] && keystoreProperties['storePassword']) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
         }
     }
 
@@ -51,7 +55,15 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Only use signing config if properties are available
+            def keystorePropertiesFile = rootProject.file("local.properties")
+            def keystoreProperties = new Properties()
             signingConfig signingConfigs.release
+            keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+            if (keystoreProperties['keyAlias'] && keystoreProperties['keyPassword'] && 
+                keystoreProperties['storeFile'] && keystoreProperties['storePassword']) {
+                signingConfig signingConfigs.release
+            }
         }
         debug {
             minifyEnabled false

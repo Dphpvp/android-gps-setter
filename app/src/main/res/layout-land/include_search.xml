@@ -12,13 +12,12 @@
 
     <EditText
         android:id="@+id/searchBox"
-        android:layout_width="match_parent"
+        android:layout_width="400dp"
         android:layout_height="@dimen/search_box_height"
         android:layout_marginStart="@dimen/padding_16"
         android:layout_marginTop="@dimen/padding_8"
         android:layout_marginEnd="@dimen/padding_16"
         android:layout_marginBottom="@dimen/padding_8"
-        android:maxWidth="400dp"
         android:layout_centerHorizontal="true"
         android:background="@drawable/search_box_background"
         android:drawableStart="@drawable/ic_baseline_search_24"
