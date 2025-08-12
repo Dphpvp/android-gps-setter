@@ -89,3 +89,4 @@ Specifically, in the case of hooking just the app, it intercepts [`android.locat
 - [Android1500](https://github.com/Android1500/GpsSetter) for the original GpsSetter targeting Android 8.1 to 13
 - [MapLibre](https://github.com/maplibre/maplibre-native) for the mapping library
 - [microG](https://github.com/microg/GmsCore) for the FOSS implementation of Google Mobile Services
+- [Jqssun](https://github.com/jqssun) For the update to Android 15.
