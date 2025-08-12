@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Landscape-specific dimensions -->
+    <dimen name="padding_8">8dp</dimen>
+    <dimen name="padding_16">12dp</dimen>
+
+    <!-- Search bar dimensions for landscape -->
+    <dimen name="search_box_height">40dp</dimen>
+    <dimen name="search_box_corners">20dp</dimen>
+    <dimen name="progressbar_size">28dp</dimen>
+    <dimen name="bottom_sheet_elevation">1dp</dimen>
+
+    <!-- Button dimensions for landscape -->
+    <dimen name="landscape_button_size">48dp</dimen>
+    <dimen name="landscape_button_margin">16dp</dimen>
+    <dimen name="landscape_icon_size">24dp</dimen>
+
+    <dimen name="margin_16">12dp</dimen>
+</resources>
