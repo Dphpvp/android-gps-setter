@@ -5,7 +5,7 @@ name: Generate APK
 
 env:
   main_project_module: app
-  target_owner: Xposed-Modules-Repo
+  target_owner: IslamIssa1997
   target_repo: io.github.jqssun.gpssetter
   target_path: target_path
 
