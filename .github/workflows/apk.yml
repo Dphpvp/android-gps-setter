@@ -6,7 +6,7 @@ name: Generate APK
 env:
   main_project_module: app
   target_owner: IslamIssa1997
-  target_repo: io.github.jqssun.gpssetter
+  target_repo: android-gps-setter
   target_path: target_path
 
 on:
