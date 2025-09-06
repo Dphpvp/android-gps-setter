@@ -54,11 +54,11 @@ jobs:
 
       - name: Build
         run: |
-          echo ${{ secrets.STORE }} | base64 -d > Issa.jks
+          echo ${{ secrets.STORE }} | base64 -d > app/Issa.jks
           echo ${{ secrets.LOCAL }} | base64 -d > local.properties
           chmod +x ./gradlew;
           ./gradlew assembleRelease --stacktrace
-          rm Issa.jks local.properties
+          rm app/Issa.jks local.properties
 
       # - name: Upload
       #   uses: actions/upload-artifact@v4
