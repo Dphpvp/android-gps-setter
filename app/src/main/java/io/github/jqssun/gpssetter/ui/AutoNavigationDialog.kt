@@ -17,9 +17,10 @@ import io.github.jqssun.gpssetter.data.*
 import io.github.jqssun.gpssetter.databinding.AutoNavigationDialogBinding
 import io.github.jqssun.gpssetter.databinding.NavigationControlDialogBinding
 import io.github.jqssun.gpssetter.utils.NavigationService
+import io.github.jqssun.gpssetter.utils.RoutingWaypoint
 import io.github.jqssun.gpssetter.utils.ext.showToast
-import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -243,16 +244,8 @@ class AutoNavigationDialog(
             service.startNavigation(route)
             context.showToast(context.getString(R.string.route_started))
 
-            // Show route line on map
-            context.showRouteOnMap(
-                route.startPoint.latitude,
-                route.startPoint.longitude,
-                route.endPoint.latitude,
-                route.endPoint.longitude
-            )
-
             setupDialog?.dismiss() // Close the setup dialog
-            // The existing start/stop button system will handle the rest
+            // The route visualization will be handled by observing waypoints in MapActivity
         }
     }
 
@@ -320,6 +313,18 @@ class AutoNavigationDialog(
                 }
             }
 
+            // Observe waypoints for route visualization
+            context.lifecycleScope.launch {
+                service.currentRouteWaypoints.collect { waypoints ->
+                    Timber.d("Received ${waypoints.size} waypoints for route visualization")
+                    if (waypoints.isNotEmpty()) {
+                        showWaypointsOnMap(waypoints)
+                    } else {
+                        Timber.d("No waypoints received - route may be using straight line fallback")
+                    }
+                }
+            }
+
             context.lifecycleScope.launch {
                 service.currentPosition.collect { position ->
                     position?.let {
@@ -383,6 +388,39 @@ class AutoNavigationDialog(
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return String.format("%02d:%02d", minutes, seconds)
+    }
+
+    private fun showWaypointsOnMap(waypoints: List<RoutingWaypoint>) {
+        try {
+            Timber.d("Attempting to show ${waypoints.size} waypoints on map")
+            // Convert RoutingWaypoint to the appropriate LatLng type for each MapActivity variant
+            val mapActivity = context as? io.github.jqssun.gpssetter.ui.MapActivity
+            if (mapActivity != null) {
+                // Convert to the right LatLng type based on the MapActivity implementation
+                val latLngList = waypoints.map { waypoint ->
+                    // This will work for both Google Maps and MapLibre since they both use LatLng
+                    // but the actual type will be determined by the import in each MapActivity
+                    CustomLatLng(waypoint.latitude, waypoint.longitude)
+                }
+                Timber.d("Converted waypoints to LatLng list, calling showRouteWithWaypoints")
+                mapActivity.showRouteWithWaypoints(latLngList)
+                Timber.d("Successfully called showRouteWithWaypoints")
+            } else {
+                Timber.w("MapActivity cast failed - context is not MapActivity")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error showing waypoints on map")
+            // Fallback to simple route display if waypoint display fails
+            navigationService?.currentRoute?.value?.let { route ->
+                Timber.d("Falling back to simple straight line route display")
+                context.showRouteOnMap(
+                    route.startPoint.latitude,
+                    route.startPoint.longitude,
+                    route.endPoint.latitude,
+                    route.endPoint.longitude
+                )
+            }
+        }
     }
 
     fun stopNavigation() {

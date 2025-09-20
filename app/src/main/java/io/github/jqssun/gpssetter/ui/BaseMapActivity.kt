@@ -95,6 +95,7 @@ abstract class BaseMapActivity: AppCompatActivity() {
     abstract fun handleNavigationStopped()
     abstract fun updateNavigationProgress(progress: Int)
     abstract fun showRouteOnMap(startLat: Double, startLon: Double, endLat: Double, endLon: Double)
+    abstract fun showRouteWithWaypoints(waypoints: List<CustomLatLng>)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

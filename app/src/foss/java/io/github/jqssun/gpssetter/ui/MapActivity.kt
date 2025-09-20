@@ -306,7 +306,7 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, MapLibreMap.OnMapClick
         // Remove existing route line
         routeLine?.let { mMap.removeAnnotation(it) }
 
-        // Create route line
+        // For now, show simple line - will be updated when we get waypoints from NavigationService
         val startPoint = LatLng(startLat, startLon)
         val endPoint = LatLng(endLat, endLon)
 
@@ -323,6 +323,28 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, MapLibreMap.OnMapClick
             .include(startPoint)
             .include(endPoint)
             .build()
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
+    }
+
+    override fun showRouteWithWaypoints(waypoints: List<CustomLatLng>) {
+        // Remove existing route line
+        routeLine?.let { mMap.removeAnnotation(it) }
+
+        if (waypoints.size < 2) return
+
+        // Create route line with all waypoints
+        val polylineOptions = PolylineOptions()
+            .color(android.graphics.Color.BLUE)
+            .width(8f)
+
+        waypoints.forEach { polylineOptions.add(it) }
+        routeLine = mMap.addPolyline(polylineOptions)
+
+        // Adjust camera to show entire route
+        val boundsBuilder = LatLngBounds.Builder()
+        waypoints.forEach { boundsBuilder.include(it) }
+        val bounds = boundsBuilder.build()
 
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
     }
