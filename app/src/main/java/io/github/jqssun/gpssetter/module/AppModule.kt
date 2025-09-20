@@ -12,6 +12,7 @@ import io.github.jqssun.gpssetter.module.util.ApplicationScope
 import io.github.jqssun.gpssetter.room.AppDatabase
 import io.github.jqssun.gpssetter.room.FavoriteDao
 import io.github.jqssun.gpssetter.update.GitHubService
+import io.github.jqssun.gpssetter.utils.NotificationsChannel
 import io.github.jqssun.gpssetter.utils.PrefManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -66,5 +67,9 @@ object AppModule{
     @Provides
     @Singleton
     fun providesApplicationScope() = CoroutineScope(SupervisorJob())
+
+    @Singleton
+    @Provides
+    fun provideNotificationsChannel(): NotificationsChannel = NotificationsChannel()
 
 }

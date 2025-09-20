@@ -11,6 +11,8 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -78,7 +80,7 @@ class MainViewModel @Inject constructor(
 
     }
 
-    val isXposed = MutableLiveData<Boolean>(true)
+    val isXposed = MutableLiveData(true)
     fun updateXposedState() {
         onMain {
             // isXposed.value = YukiHookAPI.Status.isModuleActive
@@ -90,7 +92,7 @@ class MainViewModel @Inject constructor(
         favoriteRepository.deleteFavorite(favorite)
     }
 
-    private fun getFavoriteSingle(i : Int) : Favorite {
+    private fun getFavoriteSingle(i : Int) : Favorite? {
         return favoriteRepository.getSingleFavorite(i.toLong())
     }
 
@@ -183,9 +185,18 @@ class MainViewModel @Inject constructor(
             mkdirs()
         }
         downloadFile = File(downloadFolder, fileName)
-        context.registerReceiver(downloadStateReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
-        context.contentResolver.registerContentObserver(Uri.parse("content://downloads/my_downloads"), true, downloadObserver)
-        requestId = DownloadManager.Request(Uri.parse(url)).apply {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(downloadStateReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            ContextCompat.registerReceiver(
+                context,
+                downloadStateReceiver,
+                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+        }
+        context.contentResolver.registerContentObserver("content://downloads/my_downloads".toUri(), true, downloadObserver)
+        requestId = DownloadManager.Request(url.toUri()).apply {
             setDescription(context.getString(R.string.download_manager_description))
             setTitle(context.getString(R.string.app_name))
             setDestinationUri(Uri.fromFile(downloadFile!!))
@@ -223,10 +234,10 @@ class MainViewModel @Inject constructor(
     }
 
     sealed class State {
-        object Idle: State()
+        data object Idle: State()
         data class Downloading(val progress: Int): State()
         data class Done(val fileUri: Uri): State()
-        object Failed: State()
+        data object Failed: State()
     }
 
 
@@ -236,18 +247,12 @@ class MainViewModel @Inject constructor(
         lat: Double,
         lon: Double
     ) = onIO {
-
-            val slot: Int
-            var i = 0
-            while (true) {
-                if(getFavoriteSingle(i) == null) {
-                    slot = i
-                    break
-                } else {
-                    i++
-                }
+        // Find the first available slot (ID) for the new favorite
+        var slot = 0
+        while (getFavoriteSingle(slot) != null) {
+            slot++
         }
-         insertNewFavorite(Favorite(id = slot.toLong(), address = address, lat = lat, lng = lon))
+        insertNewFavorite(Favorite(id = slot.toLong(), address = address, lat = lat, lng = lon))
     }
 
 

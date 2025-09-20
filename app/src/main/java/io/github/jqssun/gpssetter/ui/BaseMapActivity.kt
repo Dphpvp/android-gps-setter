@@ -72,6 +72,7 @@ abstract class BaseMapActivity: AppCompatActivity() {
     private var xposedDialog: AlertDialog? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val PERMISSION_ID = 42
+    private var autoNavigationDialog: AutoNavigationDialog? = null
 
     private val elevationOverlayProvider by lazy {
         ElevationOverlayProvider(this)
@@ -88,6 +89,8 @@ abstract class BaseMapActivity: AppCompatActivity() {
     protected abstract fun initializeMap()
     protected abstract fun setupButtons()
     protected abstract fun moveMapToNewLocation(moveNewLocation: Boolean)
+    abstract fun updateGPSLocation(latitude: Double, longitude: Double)
+    abstract fun setMapClickMode(enabled: Boolean, callback: ((Double, Double) -> Unit)?)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -480,6 +483,17 @@ abstract class BaseMapActivity: AppCompatActivity() {
         if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
             getLastLocation()
         }
+    }
+
+    protected fun openAutoNavigationDialog() {
+        autoNavigationDialog = AutoNavigationDialog(this, lat, lon)
+        autoNavigationDialog?.show()
+    }
+
+    override fun onDestroy() {
+        autoNavigationDialog?.cleanup()
+        autoNavigationDialog = null
+        super.onDestroy()
     }
 }
 

@@ -58,4 +58,32 @@
     <string name="app_update_failed">Update failed</string>
     <string name="dark_theme">Dark theme</string>
 
+    <!-- Auto Navigation -->
+    <string name="auto_navigation">Auto Navigation</string>
+    <string name="auto_navigation_desc">Start auto navigation route</string>
+    <string name="route_name">Route Name</string>
+    <string name="starting_point">Starting Point</string>
+    <string name="end_point">End Point</string>
+    <string name="use_current_location">Use Current Location</string>
+    <string name="select_on_map">Select on Map</string>
+    <string name="speed">Speed</string>
+    <string name="duration_optional">Duration (Optional)</string>
+    <string name="repeat_route">Repeat Route</string>
+    <string name="start_navigation">Start Navigation</string>
+    <string name="stop_navigation">Stop Navigation</string>
+    <string name="pause_navigation">Pause</string>
+    <string name="resume_navigation">Resume</string>
+    <string name="navigation_active">Navigation Active</string>
+    <string name="navigation_paused">Navigation Paused</string>
+    <string name="navigation_stopped">Navigation Stopped</string>
+    <string name="current_position">Current Position</string>
+    <string name="progress">Progress</string>
+    <string name="elapsed_time">Elapsed</string>
+    <string name="remaining_time">Remaining</string>
+    <string name="invalid_coordinates">Invalid coordinates</string>
+    <string name="route_started">Navigation started</string>
+    <string name="route_stopped">Navigation stopped</string>
+    <string name="route_paused">Navigation paused</string>
+    <string name="route_resumed">Navigation resumed</string>
+
 </resources>

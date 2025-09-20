@@ -92,6 +92,24 @@
                 android:visibility="gone" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/auto_navigation"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:contentDescription="@string/auto_navigation_desc"
+                android:layout_width="@dimen/landscape_button_size"
+                android:layout_height="@dimen/landscape_button_size"
+                android:layout_marginBottom="@dimen/padding_8"
+                android:alpha="0.95"
+                android:elevation="10dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                app:icon="@drawable/ic_route"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconSize="@dimen/landscape_icon_size" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/addfavorite"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:contentDescription="@string/addfavorite_desc"

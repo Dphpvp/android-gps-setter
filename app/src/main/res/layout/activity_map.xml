@@ -68,10 +68,32 @@
             <!-- app:backgroundTint="@color/background" -->
         
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/auto_navigation"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:contentDescription="@string/auto_navigation_desc"
+            android:layout_above="@id/getlocation"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginTop="16dp"
+            android:alpha="0.95"
+            android:elevation="10dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/ic_route"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="32dp" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/addfavorite"
             style="@style/Widget.Material3.Button.TonalButton"
             android:contentDescription="@string/addfavorite_desc"
-            android:layout_above="@id/getlocation"
+            android:layout_above="@id/auto_navigation"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_alignParentEnd="true"

@@ -28,6 +28,8 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, GoogleMap.OnMapClickLi
     private lateinit var mMap: GoogleMap
     private var mLatLng: LatLng? = null
     private var mMarker: Marker? = null
+    private var routeSelectionCallback: ((Double, Double) -> Unit)? = null
+    private var isInRouteSelectionMode = false
 
     override fun hasMarker(): Boolean {
         if (!mMarker?.isVisible!!) {
@@ -111,6 +113,13 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, GoogleMap.OnMapClickLi
         }
     }
     override fun onMapClick(latLng: LatLng) {
+        // If in route selection mode, handle the callback
+        if (isInRouteSelectionMode && routeSelectionCallback != null) {
+            routeSelectionCallback?.invoke(latLng.latitude, latLng.longitude)
+            return
+        }
+
+        // Normal map click behavior
         mLatLng = latLng
         mMarker?.let { marker ->
             mLatLng.let {
@@ -134,6 +143,9 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, GoogleMap.OnMapClickLi
         }
         binding.getlocation.setOnClickListener {
             getLastLocation()
+        }
+        binding.autoNavigation?.setOnClickListener {
+            openAutoNavigationDialog()
         }
 
         if (viewModel.isStarted) {
@@ -167,5 +179,25 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, GoogleMap.OnMapClickLi
             cancelNotification()
             showToast(getString(R.string.location_unset))
         }
+    }
+
+    override fun updateGPSLocation(latitude: Double, longitude: Double) {
+        lat = latitude
+        lon = longitude
+        val latLng = LatLng(latitude, longitude)
+        mLatLng = latLng
+        mMarker?.let { marker ->
+            marker.position = latLng
+            marker.isVisible = true
+        }
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+
+        // Update the GPS mock through the view model
+        viewModel.update(true, latitude, longitude)
+    }
+
+    override fun setMapClickMode(enabled: Boolean, callback: ((Double, Double) -> Unit)?) {
+        isInRouteSelectionMode = enabled
+        routeSelectionCallback = callback
     }
 }

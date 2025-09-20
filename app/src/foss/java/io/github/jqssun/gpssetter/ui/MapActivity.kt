@@ -32,6 +32,8 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, MapLibreMap.OnMapClick
     private lateinit var mMap: MapLibreMap
     private var mLatLng: LatLng? = null
     private var mMarker: Marker? = null
+    private var routeSelectionCallback: ((Double, Double) -> Unit)? = null
+    private var isInRouteSelectionMode = false
 
     override fun hasMarker(): Boolean {
         // TODO: if (!mMarker?.isVisible!!){
@@ -91,16 +93,16 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, MapLibreMap.OnMapClick
         with(mMap){
 
 
-            // maplibre custom ui
+            // maplibre custom ui - using free MapLibre demo tiles
             var typeUrl = "https://demotiles.maplibre.org/style.json"
             if (viewModel.mapType.equals(2)) { // Satellite
-                typeUrl = "mapbox://styles/mapbox/satellite-streets-v12"
+                typeUrl = "https://demotiles.maplibre.org/style.json"
             } else if (viewModel.mapType.equals(3)) { // Terrain
-                typeUrl = "mapbox://styles/mapbox/outdoors-v12"
+                typeUrl = "https://demotiles.maplibre.org/style.json"
             } else if (viewModel.mapType.equals(4)) { // Hybrid
-                typeUrl = "mapbox://styles/mapbox/navigation-day-v1"
+                typeUrl = "https://demotiles.maplibre.org/style.json"
             } else {
-                typeUrl = "mapbox://styles/mapbox/streets-v12"
+                typeUrl = "https://demotiles.maplibre.org/style.json"
             }
             setStyle(typeUrl) { style ->
                 if (ActivityCompat.checkSelfPermission(this@MapActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) { 
@@ -150,6 +152,13 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, MapLibreMap.OnMapClick
         }
     }
     override fun onMapClick(latLng: LatLng): Boolean {
+        // If in route selection mode, handle the callback
+        if (isInRouteSelectionMode && routeSelectionCallback != null) {
+            routeSelectionCallback?.invoke(latLng.latitude, latLng.longitude)
+            return true
+        }
+
+        // Normal map click behavior
         mLatLng = latLng
         mMarker?.let { marker ->
             mLatLng.let {
@@ -176,6 +185,9 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, MapLibreMap.OnMapClick
         }
         binding.getlocation.setOnClickListener {
             getLastLocation()
+        }
+        binding.autoNavigation?.setOnClickListener {
+            openAutoNavigationDialog()
         }
 
         if (viewModel.isStarted) {
@@ -209,5 +221,22 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, MapLibreMap.OnMapClick
             cancelNotification()
             showToast(getString(R.string.location_unset))
         }
+    }
+
+    override fun updateGPSLocation(latitude: Double, longitude: Double) {
+        lat = latitude
+        lon = longitude
+        val latLng = LatLng(latitude, longitude)
+        mLatLng = latLng
+        updateMarker(latLng)
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+
+        // Update the GPS mock through the view model
+        viewModel.update(true, latitude, longitude)
+    }
+
+    override fun setMapClickMode(enabled: Boolean, callback: ((Double, Double) -> Unit)?) {
+        isInRouteSelectionMode = enabled
+        routeSelectionCallback = callback
     }
 }
