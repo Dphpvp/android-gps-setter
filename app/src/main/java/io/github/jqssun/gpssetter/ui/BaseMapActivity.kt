@@ -91,6 +91,10 @@ abstract class BaseMapActivity: AppCompatActivity() {
     protected abstract fun moveMapToNewLocation(moveNewLocation: Boolean)
     abstract fun updateGPSLocation(latitude: Double, longitude: Double)
     abstract fun setMapClickMode(enabled: Boolean, callback: ((Double, Double) -> Unit)?)
+    abstract fun handleNavigationRunning()
+    abstract fun handleNavigationStopped()
+    abstract fun updateNavigationProgress(progress: Int)
+    abstract fun showRouteOnMap(startLat: Double, startLon: Double, endLat: Double, endLon: Double)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -488,6 +492,10 @@ abstract class BaseMapActivity: AppCompatActivity() {
     protected fun openAutoNavigationDialog() {
         autoNavigationDialog = AutoNavigationDialog(this, lat, lon)
         autoNavigationDialog?.show()
+    }
+
+    protected fun stopAutoNavigation() {
+        autoNavigationDialog?.stopNavigation()
     }
 
     override fun onDestroy() {

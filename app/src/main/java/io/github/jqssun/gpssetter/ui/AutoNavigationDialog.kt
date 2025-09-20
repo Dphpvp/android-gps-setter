@@ -242,7 +242,17 @@ class AutoNavigationDialog(
         navigationService?.let { service ->
             service.startNavigation(route)
             context.showToast(context.getString(R.string.route_started))
-            showControlDialog()
+
+            // Show route line on map
+            context.showRouteOnMap(
+                route.startPoint.latitude,
+                route.startPoint.longitude,
+                route.endPoint.latitude,
+                route.endPoint.longitude
+            )
+
+            setupDialog?.dismiss() // Close the setup dialog
+            // The existing start/stop button system will handle the rest
         }
     }
 
@@ -297,15 +307,15 @@ class AutoNavigationDialog(
                 service.navigationState.collect { state ->
                     when (state) {
                         NavigationState.RUNNING -> {
-                            if (controlDialog?.isShowing != true && !context.isFinishing && !context.isDestroyed) {
-                                showControlDialog()
-                            }
+                            // Let the existing start/stop button system handle the UI
+                            context.handleNavigationRunning()
                         }
                         NavigationState.STOPPED -> {
-                            controlDialog?.dismiss()
-                            controlDialog = null
+                            context.handleNavigationStopped()
                         }
-                        NavigationState.PAUSED -> {}
+                        NavigationState.PAUSED -> {
+                            // Handle pause state if needed
+                        }
                     }
                 }
             }
@@ -315,6 +325,15 @@ class AutoNavigationDialog(
                     position?.let {
                         // Update the GPS location in the main activity
                         context.updateGPSLocation(it.latitude, it.longitude)
+                    }
+                }
+            }
+
+            context.lifecycleScope.launch {
+                service.navigationProgress.collect { progress ->
+                    progress?.let {
+                        // Update the progress bar in the main activity
+                        context.updateNavigationProgress(it.progressPercentage.toInt())
                     }
                 }
             }
@@ -364,6 +383,10 @@ class AutoNavigationDialog(
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return String.format("%02d:%02d", minutes, seconds)
+    }
+
+    fun stopNavigation() {
+        navigationService?.stopNavigation()
     }
 
     fun cleanup() {

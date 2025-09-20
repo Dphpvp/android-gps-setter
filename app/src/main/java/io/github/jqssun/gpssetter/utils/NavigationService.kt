@@ -100,8 +100,8 @@ class NavigationService : Service() {
 
     private suspend fun simulateRoute(route: NavigationRoute, startProgress: Float = 0f) {
         val totalDistance = calculateDistance(route.startPoint, route.endPoint)
-        val totalSteps = (totalDistance / (route.speed * 0.1)).toInt().coerceAtLeast(10)
-        val stepDelay = 100L // Update every 100ms for smooth movement
+        val totalSteps = (totalDistance / (route.speed * 0.05)).toInt().coerceAtLeast(20) // More steps for smoother movement
+        val stepDelay = 50L // Update every 50ms for very smooth movement
 
         var currentStep = (startProgress * totalSteps).toInt()
         val startTime = System.currentTimeMillis() - (startProgress * (route.duration.takeIf { it > 0 } ?: (totalDistance / route.speed * 1000).toLong())).toLong()

@@ -11,11 +11,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import io.github.jqssun.gpssetter.R
 import io.github.jqssun.gpssetter.utils.ext.getAddress
 import io.github.jqssun.gpssetter.utils.ext.showToast
@@ -30,6 +26,7 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, GoogleMap.OnMapClickLi
     private var mMarker: Marker? = null
     private var routeSelectionCallback: ((Double, Double) -> Unit)? = null
     private var isInRouteSelectionMode = false
+    private var routeLine: Polyline? = null
 
     override fun hasMarker(): Boolean {
         if (!mMarker?.isVisible!!) {
@@ -176,6 +173,11 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, GoogleMap.OnMapClickLi
             removeMarker()
             binding.stopButton.visibility = View.GONE
             binding.startButton.visibility = View.VISIBLE
+
+            // Stop auto navigation if it's running
+            stopAutoNavigation()
+            binding.autoNavigationProgress.visibility = View.GONE
+
             cancelNotification()
             showToast(getString(R.string.location_unset))
         }
@@ -186,11 +188,27 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, GoogleMap.OnMapClickLi
         lon = longitude
         val latLng = LatLng(latitude, longitude)
         mLatLng = latLng
+
+        // Smooth marker movement
         mMarker?.let { marker ->
-            marker.position = latLng
+            // Animate marker position for smooth movement
+            val animator = android.animation.ValueAnimator.ofFloat(0f, 1f)
+            val startPosition = marker.position
+
+            animator.duration = 200 // 200ms smooth animation
+            animator.addUpdateListener { animation ->
+                val fraction = animation.animatedValue as Float
+                val newLat = startPosition.latitude + (latLng.latitude - startPosition.latitude) * fraction
+                val newLng = startPosition.longitude + (latLng.longitude - startPosition.longitude) * fraction
+                marker.position = LatLng(newLat, newLng)
+            }
+            animator.start()
+
             marker.isVisible = true
         }
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+
+        // Smooth camera follow (less aggressive than marker movement)
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng), 300, null)
 
         // Update the GPS mock through the view model
         viewModel.update(true, latitude, longitude)
@@ -200,4 +218,62 @@ class MapActivity: BaseMapActivity(), OnMapReadyCallback, GoogleMap.OnMapClickLi
         isInRouteSelectionMode = enabled
         routeSelectionCallback = callback
     }
+
+    override fun handleNavigationRunning() {
+        // Show the existing start/stop button system
+        binding.startButton.visibility = View.GONE
+        binding.stopButton.visibility = View.VISIBLE
+
+        // Show progress bar for auto navigation
+        binding.autoNavigationProgress.visibility = View.VISIBLE
+
+        // Update the view model to show location as started
+        viewModel.update(true, lat, lon)
+    }
+
+    override fun showRouteOnMap(startLat: Double, startLon: Double, endLat: Double, endLon: Double) {
+        // Remove existing route line
+        routeLine?.remove()
+
+        // Create route line
+        val startPoint = LatLng(startLat, startLon)
+        val endPoint = LatLng(endLat, endLon)
+
+        routeLine = mMap.addPolyline(
+            PolylineOptions()
+                .add(startPoint, endPoint)
+                .width(8f)
+                .color(android.graphics.Color.BLUE)
+                .pattern(listOf(Dash(20f), Gap(10f)))
+        )
+
+        // Adjust camera to show entire route
+        val bounds = LatLngBounds.Builder()
+            .include(startPoint)
+            .include(endPoint)
+            .build()
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100))
+    }
+
+    override fun handleNavigationStopped() {
+        // Reset to start button
+        binding.stopButton.visibility = View.GONE
+        binding.startButton.visibility = View.VISIBLE
+
+        // Hide progress bar
+        binding.autoNavigationProgress.visibility = View.GONE
+
+        // Remove route line
+        routeLine?.remove()
+        routeLine = null
+
+        // Update the view model to show location as stopped
+        viewModel.update(false, lat, lon)
+    }
+
+    override fun updateNavigationProgress(progress: Int) {
+        binding.autoNavigationProgress.progress = progress
+    }
+
 }
