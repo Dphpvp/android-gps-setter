@@ -7,7 +7,7 @@ plugins {
     id 'com.google.devtools.ksp'
 }
 
-def tagName = '0.0.6'
+def tagName = '1.1.1'
 
 android {
     compileSdk 36
@@ -15,7 +15,7 @@ android {
         applicationId "io.github.jqssun.gpssetter"
         minSdk 27
         targetSdk 34
-        versionCode 6
+        versionCode 111
         versionName tagName
         // testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "TAG_NAME", "\"${tagName}\"")
